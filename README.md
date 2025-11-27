@@ -14,6 +14,10 @@ You may also contact us at the e-mail addresses linked to our GitHub accounts.
 If you're studying at University of Trento and are looking for a thesis subject you can ask Professor Marco Patrignani 
 to be your supervisor to work on this project and we will be available if you need help or clarifications.
 
+Thesis proposals:
+- Visual Enhancement https://github.com/kalsifer-742/sunray/issues/51
+- Library Integration https://github.com/kalsifer-742/sunray/issues/52
+
 ## Comparison
 
 |                                                                      | Active project | Non-trivial | Real-time | Fully ray-traced | Hybrid |  GPU  | HW RT | Compute | SIMD  |  BVH  | Mesh  | Materials | Denoise | Rust  | Crate |  Engine   |                         Notes |
