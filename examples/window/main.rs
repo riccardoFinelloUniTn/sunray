@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use ash::vk;
 use nalgebra as na;
+use std::time::Instant;
 use sunray::{
     camera::Camera,
     error::{ErrorSource, SrResult},
@@ -37,8 +38,11 @@ struct App {
     window: Option<Window>,
     resources: Option<AppResources>,
 
+
     start_time: Option<std::time::SystemTime>,
     frame_count: u64,
+    last_fps_check: Option<Instant>,
+    frames_since_check: u32,
 }
 
 /// The number of concurrent frames that are processed (both by CPU and GPU).
@@ -289,6 +293,26 @@ impl App {
         let img_barrier_to_present_cmd_buf_inner = img_barrier_to_present_cmd_buf.inner();
         let ready_to_present_sem = self.res().ready_to_present_sems[img_index].inner();
 
+        self.frames_since_check += 1;
+
+        if let Some(last_check) = self.last_fps_check {
+            let now = Instant::now();
+            let elapsed = now.duration_since(last_check);
+
+            // Update title every 1 second
+            if elapsed.as_secs() >= 1 {
+                let fps = self.frames_since_check as f32 / elapsed.as_secs_f32();
+
+                if let Some(window) = &self.window {
+                    window.set_title(&format!("Sunray Vulkan - FPS: {:.1}", fps));
+                }
+
+                // Reset counters
+                self.last_fps_check = Some(now);
+                self.frames_since_check = 0;
+            }
+        }
+
         self.res().renderer.core().queue().submit_async(
             img_barrier_to_present_cmd_buf_inner,
             &[],
@@ -301,7 +325,7 @@ impl App {
         self.present(img_index, ready_to_present_sem)?;
 
         self.frame_count += 1;
-
+        self.window.as_ref().unwrap().request_redraw();
         Ok(())
     }
 
@@ -377,6 +401,8 @@ impl ApplicationHandler for App {
         self.handle_srresult(event_loop, result);
 
         self.start_time = Some(std::time::SystemTime::now());
+        self.last_fps_check = Some(Instant::now());
+        self.frames_since_check = 0;
     }
 
     fn window_event(
